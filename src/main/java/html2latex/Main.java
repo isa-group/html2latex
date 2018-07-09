@@ -36,7 +36,7 @@ public class Main {
             
             Parser parser = new Parser();
             parser.parse(new File(_inputFile),
-                     new ParserHandler(new File(_outputFile)));
+                     new ParserHandler(new File(_outputFile),"."));
             
         } catch (FatalErrorException e) {
             System.err.println(e.getMessage());

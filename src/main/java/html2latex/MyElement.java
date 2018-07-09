@@ -46,6 +46,10 @@ class ElementEnd extends MyElement {
     ElementEnd(String element) {
         _element = element;
     }
+    ElementEnd(String element,String content) {
+        _element = element;
+        this.content=content;
+    }
 }
 
 
@@ -55,12 +59,21 @@ class ElementEnd extends MyElement {
 abstract class MyElement {
     /** Element's name */
     protected String _element;
+    protected String content=null;
     
     /**
      * Returns element's name.
      * @return element's name
      */
     String getElementName() { return _element; }
+
+    String getContent() { return content; }
+
+    void setContent(String value) {
+        this.content=value;
+    }
+    
+    
 }
 
 

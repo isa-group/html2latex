@@ -53,7 +53,7 @@ public class ParserTest {
                             "\\begin{itemize}\n" +
                             "	\\item This is an item\n" +
                             "\\end{itemize}";
-        String result = instance.parse(input);
+        String result = instance.parse(input,".");
         assertNotNull(result);
         assertFalse("".equals(result));
         assertEquals(expResult, result);

@@ -65,7 +65,7 @@ class Configuration {
         try {        
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.parse(new File(Main.getConfigFile()));
+            Document document = builder.parse(loadConfigFile());
             Element root = document.getDocumentElement();            
             loadElementsConfiguration(root);
             loadLinksConfiguration(root);
@@ -406,6 +406,13 @@ class Configuration {
      * @return true when new LaTeX commands are to be made from CSS styles
      */
     public boolean getMakeCmdsFromCSS() { return _makeCmdsFromCSS; }
+
+    private InputStream loadConfigFile() throws FileNotFoundException {
+        InputStream result=this.getClass().getClassLoader().getResourceAsStream(Main.getConfigFile());
+        if(result==null)
+            result=new FileInputStream(new File(Main.getConfigFile()));
+        return result;
+    }
 
 }
 

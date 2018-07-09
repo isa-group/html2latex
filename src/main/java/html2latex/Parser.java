@@ -22,6 +22,8 @@ public class Parser {
     private BufferedReader _reader;
     /** Handler which receives events from the parser. */
     private IParserHandler _handler;
+    
+    private StringBuilder contentStringBuilder=null;
 
     /** Stack containing all opened and still non-closed elements. */
     private Stack<ElementStart> _openElements = new Stack<ElementStart>();
@@ -64,8 +66,8 @@ public class Parser {
     
     
     
-    public String parse(String input) throws FatalErrorException {
-        _handler = new ParserHandler();
+    public String parse(String input,String path) throws FatalErrorException {
+        _handler = new ParserHandler(path);
         _reader= new BufferedReader(new StringReader(input));
         try {
             doParsing();
@@ -126,9 +128,11 @@ public class Parser {
         while ((c = _reader.read()) != -1) {
             ch = (char)c;
 
-            if (ch == '<')
+            if (ch == '<'){
+                if(contentStringBuilder!=null)
+                    contentStringBuilder.append(ch);
                 readElement();
-            else
+            }else
                 readContent(ch);
         }
     }
@@ -148,6 +152,8 @@ public class Parser {
         
         while ((c = _reader.read()) != -1) {
             ch = (char)c;
+            if(contentStringBuilder!=null)
+                contentStringBuilder.append(ch);
             // i'm at the end of the element
             if (ch == '>') {
                 // is it a comment
@@ -176,10 +182,19 @@ public class Parser {
                         _handler.endElement(new ElementEnd(element.getElementName()),
                                 (ElementStart)element);
                     }
+                    if(element.getElementName().equals("svg")){
+                        contentStringBuilder=new StringBuilder();
+                    }
                 }
-                else if (element instanceof ElementEnd) {
+                else if (element instanceof ElementEnd) {                    
+                    if(element.getElementName().equals("svg")){
+                        if(contentStringBuilder!=null)
+                            element.setContent(contentStringBuilder.toString());
+                        contentStringBuilder=null;
+                    }
                     // check validity of the document
                     checkValidity((ElementEnd)element);
+                    
                 }
                 return;
             }
@@ -247,7 +262,11 @@ public class Parser {
         while ((c = _reader.read()) != -1) {
             ch = (char)c;
             if (ch == '<') {
-                _handler.characters(str);
+                _handler.characters(str);                
+                if(contentStringBuilder!=null){
+                    contentStringBuilder.append(str);
+                    contentStringBuilder.append('<');                
+                }
                 readElement();
                 return;
             }

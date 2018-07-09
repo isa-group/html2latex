@@ -5,6 +5,16 @@ package html2latex;
 
 import java.util.*;
 import java.io.*;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.batik.transcoder.TranscoderException;
+import org.apache.fop.svg.PDFTranscoder;
+import org.apache.batik.transcoder.TranscoderInput;
+import org.apache.batik.transcoder.TranscoderOutput;
+import org.apache.batik.transcoder.image.ImageTranscoder;
+import org.apache.batik.transcoder.image.JPEGTranscoder;
+import org.apache.batik.transcoder.image.PNGTranscoder;
 
 /**
  * Class which converts HTML into LaTeX format. Plain HTML elements are
@@ -70,14 +80,17 @@ class Convertor {
      */
     private HashMap<String, String> _biblio = new HashMap<String, String>(10);
 
+    private int imagesGenerated = 0;
+    
+    private String path;
     /**
      * Opens the output file.
      *
      * @param outputFile output LaTeX file
      * @throws FatalErrorException when output file can't be opened
      */
-    Convertor(File outputFile) throws FatalErrorException {
-
+    Convertor(File outputFile,String path) throws FatalErrorException {
+        this.path=path;
         _config = new Configuration();
 
         try {
@@ -95,12 +108,12 @@ class Convertor {
      * @param outputFile output LaTeX file
      * @throws FatalErrorException when output file can't be opened
      */
-    Convertor() throws FatalErrorException {
+    Convertor(String path) throws FatalErrorException {
 
         _config = new Configuration();
         _sw = new StringWriter();
         _writer = new BufferedWriter(_sw);
-
+        this.path=path;
     }
 
     /**
@@ -803,5 +816,58 @@ class Convertor {
         else
             result=super.toString();
         return result;
+    }
+
+    public void svgStart(ElementStart element) {
+        
+    }
+
+    public void svgEnd(ElementEnd element, ElementStart elementStart) {
+        try {
+            String imageExtension=".pdf";
+            String imageName=(path!=null?path:".")+"/Latex-OutputFolder/Image"+imagesGenerated+imageExtension;
+            File f=new File(imageName);
+            f.getParentFile().mkdirs();
+            FileOutputStream outputStream=new FileOutputStream(imageName);
+            String content="<svg "+generateAttributes(elementStart)+">"+element.getContent();            
+            content=content.replace("https://localhost:8181/app/editor","");
+            TranscoderInput transcoderInput = new TranscoderInput(
+                        new StringReader(content));
+            TranscoderOutput transcoderOutput = new TranscoderOutput(outputStream);
+            PDFTranscoder transcoder = new PDFTranscoder();
+            // Transcoder configuration
+            /*if(elementStart.getAttributes().get("width")!=null)
+                transcoder.addTranscodingHint(PDFTranscoder.KEY_WIDTH, Integer.parseInt(elementStart.getAttributes().get("width")));
+            if(elementStart.getAttributes().get("height")!=null)
+                transcoder.addTranscodingHint(PDFTranscoder.KEY_HEIGHT, Integer.parseInt(elementStart.getAttributes().get("height")));*/
+            transcoder.addTranscodingHint(ImageTranscoder.KEY_MEDIA, "print"); 
+            //transcoder.addTranscodingHint(ImageTranscoder.KEY_USER_STYLESHEET_URI, ""); 
+            
+            transcoder.transcode(transcoderInput, transcoderOutput);
+            imagesGenerated++;            
+            outputStream.flush();
+            outputStream.close();
+            _writer.write("\t\\includegraphics{Image"+imagesGenerated+imageExtension+"}\n");
+        } catch (TranscoderException ex) {
+            Logger.getLogger(Convertor.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Convertor.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            Logger.getLogger(Convertor.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
+        }
+    }
+
+    private String generateAttributes(ElementStart elementStart) {
+        StringBuilder builder=new StringBuilder();
+        for(Entry<String,String> entry:elementStart.getAttributes().entrySet()){
+            builder.append(entry.getKey());
+            builder.append("=\"");
+            builder.append(entry.getValue());
+            builder.append("\" ");
+        }
+        return builder.toString();
     }
 }

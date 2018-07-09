@@ -21,13 +21,13 @@ class ParserHandler implements IParserHandler {
      * @param outputFile output LaTeX file
      * @throws FatalErrorException fatal error (ie. output file can't be closed) occurs
      */
-    ParserHandler(File outputFile) throws FatalErrorException {
-        _conv = new Convertor(outputFile);
+    ParserHandler(File outputFile,String path) throws FatalErrorException {
+        _conv = new Convertor(outputFile,path);
     }
     
     
-    ParserHandler() throws FatalErrorException {
-        _conv=new Convertor();
+    ParserHandler(String path) throws FatalErrorException {
+        _conv=new Convertor(path);
     }
 
     
@@ -51,7 +51,7 @@ class ParserHandler implements IParserHandler {
             else if (name.equals("body")) _conv.bodyStart(element);
             else if (name.equals("font")) _conv.fontStart(element);
             else if (name.equals("img")) _conv.imgStart(element);
-            else if (name.equals("table")) _conv.tableStart(element);
+            else if (name.equals("table")) _conv.tableStart(element);            
             else _conv.commonElementStart(element);
             
             _conv.cssStyleStart(element);
@@ -87,6 +87,7 @@ class ParserHandler implements IParserHandler {
             else if (name.equals("table")) _conv.tableEnd(element, elementStart);
             else if (name.equals("body")) _conv.bodyEnd(element, elementStart);
             else if (name.equals("font")) _conv.fontEnd(element, elementStart);
+            else if (name.equals("svg")) _conv.svgEnd(element,elementStart);
             else _conv.commonElementEnd(element, elementStart);                        
             
         } catch (IOException e) {
