@@ -841,13 +841,12 @@ class Convertor {
             if(elementStart.getAttributes().get("height")!=null)
                 transcoder.addTranscodingHint(PDFTranscoder.KEY_HEIGHT, Integer.parseInt(elementStart.getAttributes().get("height")));*/
             transcoder.addTranscodingHint(ImageTranscoder.KEY_MEDIA, "print"); 
-            //transcoder.addTranscodingHint(ImageTranscoder.KEY_USER_STYLESHEET_URI, ""); 
-            
-            transcoder.transcode(transcoderInput, transcoderOutput);
-            imagesGenerated++;            
+            //transcoder.addTranscodingHint(ImageTranscoder.KEY_USER_STYLESHEET_URI, "");             
+            transcoder.transcode(transcoderInput, transcoderOutput);            
             outputStream.flush();
             outputStream.close();
-            _writer.write("\t\\includegraphics{Image"+imagesGenerated+imageExtension+"}\n");
+            _writer.write(" \\\\ \n\t\\includegraphics[width=\\textwidth]{Image"+imagesGenerated+imageExtension+"}\n");
+            imagesGenerated++;            
         } catch (TranscoderException ex) {
             Logger.getLogger(Convertor.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
