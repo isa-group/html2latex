@@ -831,6 +831,7 @@ class Convertor {
             FileOutputStream outputStream=new FileOutputStream(imageName);
             String content="<svg "+generateAttributes(elementStart)+">"+element.getContent();            
             content=content.replace("https://localhost:8181/app/editor","");
+            content=content.replace("https://exemplar.us.es/app/editor","");
             TranscoderInput transcoderInput = new TranscoderInput(
                         new StringReader(content));
             TranscoderOutput transcoderOutput = new TranscoderOutput(outputStream);
